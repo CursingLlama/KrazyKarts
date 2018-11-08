@@ -19,6 +19,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void MoveKartForward(float DeltaTime);
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -29,12 +31,17 @@ protected:
 
 private:
 
-	//Config
+	///Config
+	//Mass of the Kart in Kilograms
+	UPROPERTY(EditAnywhere) float Mass = 1500;
+	//Horsepower of the Kart
+	UPROPERTY(EditAnywhere) float Horsepower = 50;
 
-	//State
+	///State
 	UPROPERTY() FVector Velocity;
+	UPROPERTY() FVector Force;
 	
-	//Functions
+	///Functions
 	UFUNCTION() void MoveForward(float Value);	
 	
 };
