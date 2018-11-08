@@ -24,7 +24,7 @@ void AGoKart::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	FVector Translation = Velocity * DeltaTime * 100;
-	AddActorLocalOffset(Translation);
+	AddActorWorldOffset(Translation);
 }
 
 // Called to bind functionality to input
