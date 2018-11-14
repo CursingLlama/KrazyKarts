@@ -24,6 +24,7 @@ void AGoKart::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	RotateKart(DeltaTime);
 	MoveKartForward(DeltaTime);
 }
 
@@ -42,15 +43,34 @@ void AGoKart::MoveKartForward(float DeltaTime)
 	}
 }
 
+void AGoKart::RotateKart(float DeltaTime)
+{
+	FQuat RotationDelta(GetActorUpVector(), SteeringAngle * DeltaTime);
+
+	FHitResult HitResult;
+	AddActorWorldRotation(RotationDelta);
+	
+	Velocity = RotationDelta.RotateVector(Velocity);
+
+}
+
 // Called to bind functionality to input
 void AGoKart::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis(FName("MoveForward"), this, &AGoKart::MoveForward);
+	PlayerInputComponent->BindAxis(FName("MoveRight"), this, &AGoKart::TurnRight);
 }
 
 void AGoKart::MoveForward(float Value)
 {
 	Force = GetActorForwardVector() * Horsepower * 745.69987158f * Value;
 }
+
+void AGoKart::TurnRight(float Value)
+{
+	SteeringAngle = FMath::DegreesToRadians(MaxTurnRate * Value);
+}
+
+
