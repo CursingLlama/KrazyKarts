@@ -43,13 +43,13 @@ private:
 	UPROPERTY(EditAnywhere) float DragCoefficient = 16;
 	//Rolling Coefficient for the Kart from friction 
 	UPROPERTY(EditAnywhere) float RollingCoefficient = 0.015f;
-	//Maximum turn rate of the kart in degrees per second;
-	UPROPERTY(EditAnywhere) float MaxTurnRate = 90;
+	//Turning radius of the kart in meters
+	UPROPERTY(EditAnywhere) float TurningRadius = 10;
 
 	///State
 	UPROPERTY() FVector Velocity;
 	UPROPERTY() FVector Force;
-	UPROPERTY() float SteeringAngle = 0;
+	UPROPERTY() float SteeringThrow;
 	
 	///Functions
 	UFUNCTION() void MoveForward(float Value);	

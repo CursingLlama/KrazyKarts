@@ -50,13 +50,14 @@ void AGoKart::MoveKartForward(float DeltaTime)
 
 void AGoKart::RotateKart(float DeltaTime)
 {
-	FQuat RotationDelta(GetActorUpVector(), SteeringAngle * DeltaTime);
+	float DeltaLocation = FVector::DotProduct(GetActorForwardVector(), Velocity) * DeltaTime;
+	float DeltaRotation = (DeltaLocation / TurningRadius) * SteeringThrow;
+	FQuat RotationDelta(GetActorUpVector(), DeltaRotation);
 
 	FHitResult HitResult;
 	AddActorWorldRotation(RotationDelta);
 	
 	Velocity = RotationDelta.RotateVector(Velocity);
-
 }
 
 FVector AGoKart::GetAirResistance()
@@ -87,7 +88,7 @@ void AGoKart::MoveForward(float Value)
 
 void AGoKart::TurnRight(float Value)
 {
-	SteeringAngle = FMath::DegreesToRadians(MaxTurnRate * Value);
+	SteeringThrow = Value;
 }
 
 
