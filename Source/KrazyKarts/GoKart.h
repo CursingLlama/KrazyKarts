@@ -22,6 +22,7 @@ public:
 	void MoveKartForward(float DeltaTime);
 	void RotateKart(float DeltaTime);
 	FVector GetAirResistance();
+	FVector GetRollingResistance();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -40,6 +41,8 @@ private:
 	UPROPERTY(EditAnywhere) float Horsepower = 50;
 	//Drag Coefficient for the Kart 
 	UPROPERTY(EditAnywhere) float DragCoefficient = 16;
+	//Rolling Coefficient for the Kart from friction 
+	UPROPERTY(EditAnywhere) float RollingCoefficient = 0.015f;
 	//Maximum turn rate of the kart in degrees per second;
 	UPROPERTY(EditAnywhere) float MaxTurnRate = 90;
 

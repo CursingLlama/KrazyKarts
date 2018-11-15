@@ -3,6 +3,7 @@
 #include "GoKart.h"
 
 #include "Components/InputComponent.h"
+#include "Engine/World.h"
 
 // Sets default values
 AGoKart::AGoKart()
@@ -31,10 +32,11 @@ void AGoKart::Tick(float DeltaTime)
 void AGoKart::MoveKartForward(float DeltaTime)
 {
 	Force += GetAirResistance();
+	Force += GetRollingResistance();
 
 	FVector Acceleration = Force / Mass;
 	Velocity += Acceleration * DeltaTime;
-	
+
 	FVector Translation = Velocity * DeltaTime * 100;
 	
 	FHitResult HitResult;
@@ -60,6 +62,13 @@ void AGoKart::RotateKart(float DeltaTime)
 FVector AGoKart::GetAirResistance()
 {
 	return -Velocity.GetSafeNormal() * Velocity.SizeSquared() * DragCoefficient;
+}
+
+FVector AGoKart::GetRollingResistance()
+{
+	float RelativeGravity = -GetWorld()->GetGravityZ() / 100;
+	float NormalForce = RelativeGravity * Mass;
+	return -Velocity.GetSafeNormal() * NormalForce * RollingCoefficient;
 }
 
 // Called to bind functionality to input
