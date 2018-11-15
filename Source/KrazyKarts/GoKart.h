@@ -52,6 +52,6 @@ private:
 	UPROPERTY() float SteeringThrow;
 	
 	///Functions
-	UFUNCTION() void MoveForward(float Value);	
-	UFUNCTION() void TurnRight(float Value);
+	UFUNCTION(Server, Reliable, WithValidation) void Server_MoveForward(float Value);	
+	UFUNCTION(Server, Reliable, WithValidation) void Server_TurnRight(float Value);
 };
