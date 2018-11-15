@@ -30,10 +30,13 @@ void AGoKart::Tick(float DeltaTime)
 
 void AGoKart::MoveKartForward(float DeltaTime)
 {
+	Force += GetAirResistance();
+
 	FVector Acceleration = Force / Mass;
 	Velocity += Acceleration * DeltaTime;
+	
 	FVector Translation = Velocity * DeltaTime * 100;
-
+	
 	FHitResult HitResult;
 	AddActorWorldOffset(Translation, true, &HitResult);
 
@@ -52,6 +55,11 @@ void AGoKart::RotateKart(float DeltaTime)
 	
 	Velocity = RotationDelta.RotateVector(Velocity);
 
+}
+
+FVector AGoKart::GetAirResistance()
+{
+	return -Velocity.GetSafeNormal() * Velocity.SizeSquared() * DragCoefficient;
 }
 
 // Called to bind functionality to input
