@@ -54,4 +54,9 @@ private:
 	///Functions
 	UFUNCTION(Server, Reliable, WithValidation) void Server_MoveForward(float Value);	
 	UFUNCTION(Server, Reliable, WithValidation) void Server_TurnRight(float Value);
+
+	void MoveForward(float Value);
+	void TurnRight(float Value);
+
+	FString GetRoleText(ENetRole Role);
 };
