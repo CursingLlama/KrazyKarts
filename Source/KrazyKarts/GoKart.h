@@ -75,10 +75,15 @@ private:
 	UPROPERTY(Replicated) float SteeringThrow;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ServerState) FGoKartState ServerState;
+
+	TArray<FGoKartMove> UnacknowledgedMoves;
 		
 	///Functions
 	UFUNCTION(Server, Reliable, WithValidation) void Server_SendMove(FGoKartMove Move);
-	UFUNCTION() void SimulateMove(FGoKartMove Move);
+	UFUNCTION() void SimulateMove(const FGoKartMove& Move);
+	UFUNCTION() FGoKartMove CreateMove(float DeltaTime);
+	UFUNCTION() void ClearAcknowledgedMoves();
+	
 	UFUNCTION() void OnRep_ServerState();
 
 	void MoveForward(float Value);

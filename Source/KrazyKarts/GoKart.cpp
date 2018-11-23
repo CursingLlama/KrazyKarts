@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "UnrealNetwork.h"
+#include "GameFramework/GameStateBase.h"
 
 // Sets default values
 AGoKart::AGoKart()
@@ -31,17 +32,26 @@ void AGoKart::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FGoKartMove Move;
-	Move.DeltaTime = DeltaTime;
-	Move.Throttle = Throttle;
-	Move.SteeringThrow = SteeringThrow;
-
-	if (IsLocallyControlled() && !HasAuthority())
+	//We are not the server but in control of the pawn
+	if (Role == ROLE_AutonomousProxy)
 	{
+		FGoKartMove Move = CreateMove(DeltaTime);
+		SimulateMove(Move);
+		UnacknowledgedMoves.Emplace(Move);
 		Server_SendMove(Move);
-	}	
+	}
 
-	SimulateMove(Move);
+	//We are the server and in control of the pawn
+	if (Role == ROLE_Authority && GetRemoteRole() == ROLE_SimulatedProxy)
+	{
+		FGoKartMove Move = CreateMove(DeltaTime);
+		Server_SendMove(Move);
+	}
+
+	if (Role == ROLE_SimulatedProxy)
+	{
+		SimulateMove(ServerState.LastMove);
+	}
 		
 	DrawDebugString(GetWorld(), FVector(0,0,100), GetRoleText(Role), this, FColor::White, DeltaTime);
 }
@@ -54,32 +64,47 @@ void AGoKart::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifeti
 	DOREPLIFETIME(AGoKart, ServerState);
 }
 
-void AGoKart::SimulateMove(FGoKartMove Move)
+void AGoKart::SimulateMove(const FGoKartMove& Move)
 {
 	RotateKart(Move.DeltaTime, Move.SteeringThrow);
 	MoveKartForward(Move.DeltaTime, Move.Throttle);
+}
+
+FGoKartMove AGoKart::CreateMove(float DeltaTime)
+{
+	FGoKartMove Move;
+	Move.DeltaTime = DeltaTime;
+	Move.Throttle = Throttle;
+	Move.SteeringThrow = SteeringThrow;
+	Move.TimeStamp = GetWorld()->GetGameState()->GetServerWorldTimeSeconds();
+	return Move;
+}
+
+void AGoKart::ClearAcknowledgedMoves()
+{
+	TArray<FGoKartMove> NewMoves;
+		
+	for (const FGoKartMove& Move: UnacknowledgedMoves)
+	{
+		if (Move.TimeStamp > ServerState.LastMove.TimeStamp)
+		{
+			NewMoves.Emplace(Move);
+		}
+	}
+
+	UnacknowledgedMoves = NewMoves;
 }
 
 void AGoKart::OnRep_ServerState()
 {
 	SetActorTransform(ServerState.Transform);
 	Velocity = ServerState.Velocity;
-}
+	
+	ClearAcknowledgedMoves();
 
-FString AGoKart::GetRoleText(ENetRole Role)
-{
-	switch (Role)
+	for (const FGoKartMove& Move : UnacknowledgedMoves)
 	{
-	case ROLE_None:
-		return "None";
-	case ROLE_Authority:
-		return "Authority";
-	case ROLE_AutonomousProxy:
-		return "AutonomousProxy";
-	case ROLE_SimulatedProxy:
-		return "SimulatedProxy";
-	default:
-		return "Error";;
+		SimulateMove(Move);
 	}
 }
 
@@ -160,4 +185,21 @@ bool AGoKart::Server_SendMove_Validate(FGoKartMove Move)
 	if (Move.Throttle > 1 || Move.Throttle < -1) return false;
 	if (Move.SteeringThrow > 1 || Move.SteeringThrow < -1) return false;
 	return true;
+}
+
+FString AGoKart::GetRoleText(ENetRole Role)
+{
+	switch (Role)
+	{
+	case ROLE_None:
+		return "None";
+	case ROLE_Authority:
+		return "Authority";
+	case ROLE_AutonomousProxy:
+		return "AutonomousProxy";
+	case ROLE_SimulatedProxy:
+		return "SimulatedProxy";
+	default:
+		return "Error";;
+	}
 }
