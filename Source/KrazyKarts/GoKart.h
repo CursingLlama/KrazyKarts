@@ -6,6 +6,28 @@
 #include "GameFramework/Pawn.h"
 #include "GoKart.generated.h"
 
+
+USTRUCT()
+struct FGoKartMove
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY() float Throttle;
+	UPROPERTY() float SteeringThrow;
+	UPROPERTY() float DeltaTime;
+	UPROPERTY() float TimeStamp;
+};
+
+USTRUCT()
+struct FGoKartState
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY() FGoKartMove LastMove;
+	UPROPERTY() FVector Velocity;
+	UPROPERTY() FTransform Transform;
+};
+
 UCLASS()
 class KRAZYKARTS_API AGoKart : public APawn
 {
@@ -19,8 +41,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void MoveKartForward(float DeltaTime);
-	void RotateKart(float DeltaTime);
+	void MoveKartForward(float DeltaTime, float Throttle);
+	void RotateKart(float DeltaTime, float SteeringThrow);
 	FVector GetAirResistance();
 	FVector GetRollingResistance();
 
@@ -36,7 +58,7 @@ private:
 
 	///Config
 	//Mass of the Kart in Kilograms
-	UPROPERTY(EditAnywhere) float Mass = 1500;
+	UPROPERTY(EditAnywhere) float Mass = 2000;
 	//Horsepower of the Kart
 	UPROPERTY(EditAnywhere) float Horsepower = 50;
 	//Drag Coefficient for the Kart 
@@ -48,12 +70,16 @@ private:
 
 	///State
 	UPROPERTY() FVector Velocity;
-	UPROPERTY() FVector Force;
-	UPROPERTY() float SteeringThrow;
-	
+
+	UPROPERTY(Replicated) float Throttle;
+	UPROPERTY(Replicated) float SteeringThrow;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ServerState) FGoKartState ServerState;
+		
 	///Functions
-	UFUNCTION(Server, Reliable, WithValidation) void Server_MoveForward(float Value);	
-	UFUNCTION(Server, Reliable, WithValidation) void Server_TurnRight(float Value);
+	UFUNCTION(Server, Reliable, WithValidation) void Server_SendMove(FGoKartMove Move);
+	UFUNCTION() void SimulateMove(FGoKartMove Move);
+	UFUNCTION() void OnRep_ServerState();
 
 	void MoveForward(float Value);
 	void TurnRight(float Value);
