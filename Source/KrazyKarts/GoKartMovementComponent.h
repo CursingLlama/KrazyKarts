@@ -50,7 +50,7 @@ private:
 	//Mass of the Kart in Kilograms
 	UPROPERTY(EditAnywhere) float Mass = 2000;
 	//Horsepower of the Kart
-	UPROPERTY(EditAnywhere) float Horsepower = 50;
+	UPROPERTY(EditAnywhere) float Horsepower = 30;
 	//Drag Coefficient for the Kart 
 	UPROPERTY(EditAnywhere) float DragCoefficient = 16;
 	//Rolling Coefficient for the Kart from friction 
