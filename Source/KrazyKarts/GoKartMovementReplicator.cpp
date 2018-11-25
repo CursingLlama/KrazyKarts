@@ -20,7 +20,7 @@ void UGoKartMovementReplicator::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MovementComponent = GetOwner()->FindComponentByClass<UGoKartMovementComponent>();	
+	MovementComponent = GetOwner()->FindComponentByClass<UGoKartMovementComponent>();
 }
 
 // Called every frame
@@ -90,12 +90,25 @@ FHermiteCubicSpline UGoKartMovementReplicator::CreateSpline()
 	return Spline;
 }
 
+void UGoKartMovementReplicator::InterpolateLocation(const FHermiteCubicSpline &Spline, float LerpRatio)
+{
+	FVector NewLocation = Spline.InterpolateLocation(LerpRatio);
+	if (MeshOffsetRoot)
+	{
+		MeshOffsetRoot->SetWorldLocation(NewLocation);
+	}
+}
+
 void UGoKartMovementReplicator::InterpolateRotation(float LerpRatio)
 {
 	FQuat TargetRotation = ServerState.Transform.GetRotation();
 	FQuat StartingRotation = ClientStartTransform.GetRotation();
 	FQuat NewRotation = FQuat::Slerp(StartingRotation, TargetRotation, LerpRatio);
-	GetOwner()->SetActorRotation(NewRotation);
+
+	if (MeshOffsetRoot)
+	{
+		MeshOffsetRoot->SetWorldRotation(NewRotation);
+	}
 }
 
 void UGoKartMovementReplicator::InterpolateVelocity(const FHermiteCubicSpline &Spline, float LerpRatio)
@@ -103,12 +116,6 @@ void UGoKartMovementReplicator::InterpolateVelocity(const FHermiteCubicSpline &S
 	FVector NewDerivative = Spline.InterpolateDerivative(LerpRatio);
 	FVector NewVelocity = NewDerivative / VelocityToDerivative();
 	MovementComponent->SetVelocity(NewVelocity);
-}
-
-void UGoKartMovementReplicator::InterpolateLocation(const FHermiteCubicSpline &Spline, float LerpRatio)
-{
-	FVector NewLocation = Spline.InterpolateLocation(LerpRatio);
-	GetOwner()->SetActorLocation(NewLocation);
 }
 
 void UGoKartMovementReplicator::OnRep_ServerState()
@@ -143,13 +150,19 @@ void UGoKartMovementReplicator::AutonomousProxy_OnRep_ServerState()
 
 void UGoKartMovementReplicator::SimulatedProxy_OnRep_ServerState()
 {
+	if (!MovementComponent) { return; }
+
 	ClientTimeBetweenUpdates = ClientTimeSinceUpdate;
 	ClientTimeSinceUpdate = 0;
 
-	ClientStartTransform = GetOwner()->GetActorTransform();
-
-	if (!MovementComponent) { return; }
+	if (MeshOffsetRoot)
+	{
+		ClientStartTransform.SetLocation(MeshOffsetRoot->GetComponentLocation());
+		ClientStartTransform.SetRotation(MeshOffsetRoot->GetComponentQuat());
+	}	
 	ClientStartVelocity = MovementComponent->GetVelocity();
+
+	GetOwner()->SetActorTransform(ServerState.Transform);
 }
 
 

@@ -58,6 +58,8 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_ServerState) FGoKartState ServerState;
 
 	UPROPERTY() UGoKartMovementComponent* MovementComponent;
+	UPROPERTY() USceneComponent* MeshOffsetRoot;
+	UFUNCTION(BlueprintCallable) void SetMeshOffsetRoot(USceneComponent* Root) { MeshOffsetRoot = Root; }
 
 	TArray<FGoKartMove> UnacknowledgedMoves;
 

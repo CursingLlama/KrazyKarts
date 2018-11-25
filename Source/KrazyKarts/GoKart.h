@@ -30,8 +30,11 @@ protected:
 private:
 	
 	///State
-	UPROPERTY(VisibleAnywhere) class UGoKartMovementComponent* MovementComponent = nullptr;
-	UPROPERTY(VisibleAnywhere) class UGoKartMovementReplicator* MovementReplicator = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true")) 
+	class UGoKartMovementComponent* MovementComponent = nullptr;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true")) 
+	class UGoKartMovementReplicator* MovementReplicator = nullptr;
 
 	///Functions
 	void MoveForward(float Value);
