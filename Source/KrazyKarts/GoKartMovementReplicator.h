@@ -47,8 +47,17 @@ private:
 
 	TArray<FGoKartMove> UnacknowledgedMoves;
 
+	FTransform ClientStartTransform;
+	float ClientTimeSinceUpdate;
+	float ClientTimeBetweenUpdates;
+
 	///Functions
+	void ClientTick(float DeltaTime);
+
 	UFUNCTION() void ClearAcknowledgedMoves();
+	UFUNCTION() void UpdateServerState(const FGoKartMove& Move);
 	UFUNCTION() void OnRep_ServerState();
+	UFUNCTION() void AutonomousProxy_OnRep_ServerState();
+	UFUNCTION() void SimulatedProxy_OnRep_ServerState();
 
 };

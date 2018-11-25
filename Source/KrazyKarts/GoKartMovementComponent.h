@@ -31,7 +31,8 @@ public:
 	UGoKartMovementComponent();
 
 	UFUNCTION() void SimulateMove(const FGoKartMove& Move);
-	UFUNCTION() FGoKartMove CreateMove(float DeltaTime);
+
+	FGoKartMove GetLastMove() { return LastMove; }
 
 	void SetThrottle(float Value) { Throttle = Value; }
 	void SetSteeringThrow(float Value) { SteeringThrow = Value; }
@@ -62,8 +63,10 @@ private:
 	UPROPERTY() FVector Velocity;
 	UPROPERTY() float Throttle;
 	UPROPERTY() float SteeringThrow;
+	UPROPERTY() FGoKartMove LastMove;
 
 	///Functions
+	UFUNCTION() FGoKartMove CreateMove(float DeltaTime);
 
 	void MoveKartForward(float DeltaTime, float Throttle);
 	void RotateKart(float DeltaTime, float SteeringThrow);
