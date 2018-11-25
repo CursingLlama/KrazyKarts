@@ -18,6 +18,20 @@ struct FGoKartState
 	UPROPERTY() FTransform Transform;
 };
 
+struct FHermiteCubicSpline
+{
+	FVector StartLocation, StartDerivative, TargetLocation, TargetDerivative;
+
+	FVector InterpolateLocation(float LerpRatio) const
+	{
+		return FMath::CubicInterp(StartLocation, StartDerivative, TargetLocation, TargetDerivative, LerpRatio);
+	}
+	FVector InterpolateDerivative(float LerpRatio) const
+	{
+		return FMath::CubicInterpDerivative(StartLocation, StartDerivative, TargetLocation, TargetDerivative, LerpRatio);
+	}
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KRAZYKARTS_API UGoKartMovementReplicator : public UActorComponent
 {
@@ -48,16 +62,23 @@ private:
 	TArray<FGoKartMove> UnacknowledgedMoves;
 
 	FTransform ClientStartTransform;
+	FVector ClientStartVelocity;
 	float ClientTimeSinceUpdate;
 	float ClientTimeBetweenUpdates;
 
 	///Functions
 	void ClientTick(float DeltaTime);
-
+	
+	FHermiteCubicSpline CreateSpline();
+	void InterpolateLocation(const FHermiteCubicSpline &Spline, float LerpRatio);
+	void InterpolateVelocity(const FHermiteCubicSpline &Spline, float LerpRatio);
+	void InterpolateRotation(float LerpRatio);
+	
 	UFUNCTION() void ClearAcknowledgedMoves();
 	UFUNCTION() void UpdateServerState(const FGoKartMove& Move);
 	UFUNCTION() void OnRep_ServerState();
 	UFUNCTION() void AutonomousProxy_OnRep_ServerState();
 	UFUNCTION() void SimulatedProxy_OnRep_ServerState();
 
+	float VelocityToDerivative();
 };
