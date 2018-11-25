@@ -4,6 +4,7 @@
 
 #include "UnrealNetwork.h"
 #include "GameFramework/Actor.h"
+#include "Engine/World.h"
 
 
 // Sets default values for this component's properties
@@ -189,6 +190,8 @@ void UGoKartMovementReplicator::ClearAcknowledgedMoves()
 void UGoKartMovementReplicator::Server_SendMove_Implementation(FGoKartMove Move)
 {
 	if (!MovementComponent) { return; }
+
+	ClientSimulatedTime += Move.DeltaTime;
 	MovementComponent->SimulateMove(Move);
 
 	UpdateServerState(Move);
@@ -196,7 +199,17 @@ void UGoKartMovementReplicator::Server_SendMove_Implementation(FGoKartMove Move)
 
 bool UGoKartMovementReplicator::Server_SendMove_Validate(FGoKartMove Move)
 {
-	if (Move.Throttle > 1 || Move.Throttle < -1) { return false; }
-	if (Move.SteeringThrow > 1 || Move.SteeringThrow < -1) { return false; }
+	if (FMath::Abs(Move.Throttle) > 1 || FMath::Abs(Move.SteeringThrow) > 1) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("Client inputs exceed maximum!"));
+		return false; 
+	}
+
+	if (ClientSimulatedTime + Move.DeltaTime > GetWorld()->GetTimeSeconds())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Client time is moving too fast!"));
+		return false;
+	}
+
 	return true;
 }

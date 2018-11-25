@@ -67,6 +67,7 @@ private:
 	FVector ClientStartVelocity;
 	float ClientTimeSinceUpdate;
 	float ClientTimeBetweenUpdates;
+	float ClientSimulatedTime;
 
 	///Functions
 	void ClientTick(float DeltaTime);
